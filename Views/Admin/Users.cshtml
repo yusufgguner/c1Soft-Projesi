@@ -1,0 +1,36 @@
+@model List<c1Soft_Projesi.Models.User>
+
+@{
+    ViewData["Title"] = "Kullanıcı Yönetimi";
+}
+
+<h1>Kullanıcı Yönetimi</h1>
+<p class="form-note">Sistemde kayıtlı kullanıcılar</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Kullanıcı adı</th>
+            <th>Ad Soyad</th>
+            <th>E-posta</th>
+            <th>Rol</th>
+            <th>Durum</th>
+            <th>Kayıt tarihi</th>
+            <th>İşlem</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.Username</td>
+                <td>@user.FirstName @user.LastName</td>
+                <td>@user.Email</td>
+                <td>@user.Role?.RoleName</td>
+                <td>@(user.IsActive ? "Aktif" : "Pasif")</td>
+                <td>@user.CreatedAt.ToString("dd.MM.yyyy")</td>
+                <td><a asp-action="EditUser" asp-route-id="@user.UserId">Düzenle</a></td>
+            </tr>
+        }
+    </tbody>
+</table>

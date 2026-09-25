@@ -1,0 +1,48 @@
+@model List<c1Soft_Projesi.Models.Product>
+
+@{
+    ViewData["Title"] = "Ürün Yönetimi";
+}
+
+<h1>Ürün Yönetimi</h1>
+<p class="form-note">Sistemde kayıtlı ürünler</p>
+<a asp-action="CreateProduct" class="btn btn-primary">Yeni Ürün Ekle</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Ürün Kodu</th>
+            <th>Ürün Adı</th>
+            <th>Marka</th>
+            <th>Kategori</th>
+            <th>Stok</th>
+            <th>Fiyat</th>
+            <th>Durum</th>
+            <th>İşlem</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var product in Model)
+        {
+            <tr>
+                <td>@product.ProductCode</td>
+                <td>@product.ProductName</td>
+                <td>@product.Brand</td>
+                <td>@product.Category?.CategoryName</td>
+                <td>@product.StockQuantity</td>
+                <td>@product.Price.ToString("N2") TL</td>
+                <td>@(product.IsActive ? "Aktif" : "Pasif")</td>
+                <td>
+                    <a asp-action="EditProduct" asp-route-id="@product.ProductId">Düzenle</a>
+                    @if (product.IsActive)
+                    {
+                        <form asp-action="DeleteProduct" method="post" class="inline-form">
+                            <input type="hidden" name="id" value="@product.ProductId" />
+                            <button type="submit" class="btn btn-danger">Pasif Yap</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,67 @@
+@model c1Soft_Projesi.Models.Cart
+
+@{
+    ViewData["Title"] = "Sepetim";
+    decimal total = 0;
+}
+
+<h1>Sepetim</h1>
+
+@if (TempData["CartError"] != null)
+{
+    <div class="text-danger">@TempData["CartError"]</div>
+}
+
+@if (TempData["OrderError"] != null)
+{
+    <div class="text-danger">@TempData["OrderError"]</div>
+}
+
+@if (Model.Items == null || Model.Items.Count == 0)
+{
+    <p>Sepetinizde henüz ürün bulunmuyor.</p>
+    <a asp-controller="Products" asp-action="Index" class="btn btn-primary">Ürünlere Git</a>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Ürün</th>
+                <th>Adet</th>
+                <th>Birim Fiyat</th>
+                <th>Toplam</th>
+                <th>İşlem</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Items)
+            {
+                decimal lineTotal = item.Product!.Price * item.Quantity;
+                total += lineTotal;
+
+                <tr>
+                    <td>@item.Product.ProductName</td>
+                    <td>@item.Quantity</td>
+                    <td>@item.Product.Price.ToString("N2") TL</td>
+                    <td>@lineTotal.ToString("N2") TL</td>
+                    <td>
+                        <form asp-action="Update" method="post" class="cart-action">
+                            <input type="hidden" name="cartItemId" value="@item.CartItemId" />
+                            <input type="number" name="quantity" value="@item.Quantity" min="1" />
+                            <button type="submit" class="btn btn-secondary">Güncelle</button>
+                        </form>
+
+                        <form asp-action="Remove" method="post" class="cart-action">
+                            <input type="hidden" name="cartItemId" value="@item.CartItemId" />
+                            <button type="submit" class="btn btn-danger">Sil</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <p><strong>Genel toplam: @total.ToString("N2") TL</strong></p>
+    <a asp-controller="Orders" asp-action="Create" class="btn btn-primary">Siparişe Geç</a>
+}

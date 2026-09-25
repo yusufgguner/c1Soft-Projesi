@@ -1,0 +1,28 @@
+@model c1Soft_Projesi.Models.Category
+
+@{
+    ViewData["Title"] = "Kategori Düzenle";
+}
+
+<div class="simple-form">
+    <h1>Kategori Düzenle</h1>
+
+    <form asp-action="EditCategory" method="post">
+        <input asp-for="CategoryId" type="hidden" />
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <label asp-for="CategoryName">Kategori adı</label>
+        <input asp-for="CategoryName" class="form-control" />
+        <span asp-validation-for="CategoryName" class="text-danger"></span>
+
+        <label asp-for="Description">Açıklama</label>
+        <textarea asp-for="Description" class="form-control"></textarea>
+
+        <button type="submit" class="btn btn-primary">Değişiklikleri Kaydet</button>
+        <a asp-action="Categories" class="btn btn-secondary">Geri Dön</a>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

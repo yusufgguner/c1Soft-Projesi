@@ -1,0 +1,33 @@
+@{
+    ViewData["Title"] = "Ana Sayfa";
+}
+
+<div>
+    <h1>C1Soft B2B</h1>
+    <p class="form-note">İşletmeler için sade ürün ve sipariş takip sistemi.</p>
+
+    <div class="home-banners">
+        <div class="home-banner">
+            <strong>Ofis ürünleri</strong>
+            <span>Günlük ihtiyaçlarınızı hızlıca sipariş edin.</span>
+        </div>
+        <div class="home-banner">
+            <strong>Stok kontrolü</strong>
+            <span>Güncel stok durumunu ürün listesinden görün.</span>
+        </div>
+        <div class="home-banner">
+            <strong>Kolay sipariş</strong>
+            <span>Ürünleri grid üzerinden doğrudan sepete ekleyin.</span>
+        </div>
+    </div>
+
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <a asp-controller="Products" asp-action="Index" class="btn btn-primary">Ürünleri Gör</a>
+    }
+    else
+    {
+        <a asp-controller="Account" asp-action="Login" class="btn btn-primary">Giriş Yap</a>
+        <a asp-controller="Account" asp-action="Register" class="btn btn-secondary">Kayıt Ol</a>
+    }
+</div>

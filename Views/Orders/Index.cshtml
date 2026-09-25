@@ -1,0 +1,55 @@
+@model List<c1Soft_Projesi.Models.Order>
+
+@{
+    ViewData["Title"] = "Siparişlerim";
+}
+
+<h1>Siparişlerim</h1>
+
+@if (Model.Count == 0)
+{
+    <p>Henüz bir siparişiniz bulunmuyor.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Sipariş No</th>
+                <th>Tarih</th>
+                <th>Durum</th>
+                <th>Toplam</th>
+                <th>Ürünler</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var order in Model)
+            {
+                <tr>
+                    <td>@order.OrderNumber</td>
+                    <td>@order.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                    <td>
+                        @switch (order.OrderStatus)
+                        {
+                            case "Pending": <span>Bekliyor</span> break;
+                            case "Approved": <span>Onaylandı</span> break;
+                            case "Rejected": <span>Reddedildi</span> break;
+                            case "Shipped": <span>Kargoda</span> break;
+                            case "Delivered": <span>Teslim Edildi</span> break;
+                            case "Cancelled": <span>İptal</span> break;
+                            default: <span>@order.OrderStatus</span> break;
+                        }
+                    </td>
+                    <td>@order.TotalAmount.ToString("N2") TL</td>
+                    <td>
+                        @foreach (var item in order.Items)
+                        {
+                            <div>@item.ProductName - @item.Quantity adet</div>
+                        }
+                        <a asp-action="Details" asp-route-id="@order.OrderId">Detay</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

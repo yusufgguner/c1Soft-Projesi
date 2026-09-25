@@ -1,0 +1,33 @@
+@model c1Soft_Projesi.ViewModels.LoginViewModel
+
+@{
+    ViewData["Title"] = "Giriş Yap";
+}
+
+<div class="simple-form">
+    <h1>Giriş Yap</h1>
+    <p class="form-note">C1Soft B2B sistemine giriş yapınız.</p>
+
+    <form asp-action="Login" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <label asp-for="Username"></label>
+        <input asp-for="Username" class="form-control" />
+        <span asp-validation-for="Username" class="text-danger"></span>
+
+        <label asp-for="Password"></label>
+        <input asp-for="Password" class="form-control" />
+        <span asp-validation-for="Password" class="text-danger"></span>
+
+        <button type="submit" class="btn btn-primary">Giriş Yap</button>
+    </form>
+
+    <p class="form-note">
+        Hesabınız yok mu?
+        <a asp-action="Register">Kayıt Ol</a>
+    </p>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

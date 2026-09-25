@@ -1,0 +1,16 @@
+# Visual Studio
+.vs/
+
+# .NET build outputs
+bin/
+obj/
+
+# Local database backup
+*.bak
+
+# Local user-specific files
+*.user
+*.suo
+
+# Local environment files
+appsettings.Local.json

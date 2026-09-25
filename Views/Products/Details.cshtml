@@ -1,0 +1,59 @@
+@model c1Soft_Projesi.Models.Product
+
+@{
+    ViewData["Title"] = "Ürün Detayı";
+}
+
+<div class="product-detail">
+    <h1>@Model.ProductName</h1>
+    <p class="form-note">Ürün kodu: @Model.ProductCode</p>
+
+    @if (TempData["CartError"] != null)
+    {
+        <div class="text-danger">@TempData["CartError"]</div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
+    {
+        <img src="@Model.ImageUrl" alt="@Model.ProductName" class="product-image" />
+    }
+
+    <dl>
+        <dt>Açıklama</dt>
+        <dd>@Model.Description</dd>
+
+        <dt>Marka</dt>
+        <dd>@Model.Brand</dd>
+
+        <dt>Kategori</dt>
+        <dd>@Model.Category?.CategoryName</dd>
+
+        <dt>Üretici kodu</dt>
+        <dd>@Model.ManufacturerCode</dd>
+
+        <dt>Özel kod</dt>
+        <dd>@Model.CustomCode1</dd>
+
+        <dt>Fiyat</dt>
+        <dd>@Model.Price.ToString("N2") TL</dd>
+
+        <dt>Stok</dt>
+        <dd>@Model.StockQuantity adet</dd>
+    </dl>
+
+    @if (Model.StockQuantity > 0)
+    {
+        <form asp-controller="Cart" asp-action="Add" method="post">
+            <input type="hidden" name="productId" value="@Model.ProductId" />
+            <label for="quantity">Adet</label>
+            <input id="quantity" name="quantity" type="number" value="1" min="1" max="@Model.StockQuantity" />
+            <button type="submit" class="btn btn-primary">Sepete Ekle</button>
+        </form>
+    }
+    else
+    {
+        <p class="text-danger">Bu ürün şu anda stokta yok.</p>
+    }
+
+    <a asp-action="Index" class="btn btn-secondary">Ürünlere dön</a>
+</div>

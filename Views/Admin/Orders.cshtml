@@ -1,0 +1,102 @@
+@model List<c1Soft_Projesi.Models.Order>
+
+@{
+    ViewData["Title"] = "Sipariş Yönetimi";
+}
+
+<h1>Sipariş Yönetimi</h1>
+<p class="form-note">Sistemdeki siparişler</p>
+
+@if (Model.Count == 0)
+{
+    <p>Henüz sipariş bulunmuyor.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Sipariş No</th>
+                <th>Kullanıcı</th>
+                <th>Tarih</th>
+                <th>Durum</th>
+                <th>Toplam</th>
+                <th>Ürünler</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var order in Model)
+            {
+                <tr>
+                    <td>@order.OrderNumber</td>
+                    <td>@order.User?.Username</td>
+                    <td>@order.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                    <td>
+                        <form asp-action="UpdateOrderStatus" method="post" class="inline-form">
+                            <input type="hidden" name="id" value="@order.OrderId" />
+                            <select name="status">
+                                @if (order.OrderStatus == "Pending")
+                                {
+                                    <option value="Pending" selected>Bekliyor</option>
+                                }
+                                else
+                                {
+                                    <option value="Pending">Bekliyor</option>
+                                }
+                                @if (order.OrderStatus == "Approved")
+                                {
+                                    <option value="Approved" selected>Onaylandı</option>
+                                }
+                                else
+                                {
+                                    <option value="Approved">Onaylandı</option>
+                                }
+                                @if (order.OrderStatus == "Shipped")
+                                {
+                                    <option value="Shipped" selected>Kargoda</option>
+                                }
+                                else
+                                {
+                                    <option value="Shipped">Kargoda</option>
+                                }
+                                @if (order.OrderStatus == "Rejected")
+                                {
+                                    <option value="Rejected" selected>Reddedildi</option>
+                                }
+                                else
+                                {
+                                    <option value="Rejected">Reddedildi</option>
+                                }
+                                @if (order.OrderStatus == "Delivered")
+                                {
+                                    <option value="Delivered" selected>Teslim Edildi</option>
+                                }
+                                else
+                                {
+                                    <option value="Delivered">Teslim Edildi</option>
+                                }
+                                @if (order.OrderStatus == "Cancelled")
+                                {
+                                    <option value="Cancelled" selected>İptal</option>
+                                }
+                                else
+                                {
+                                    <option value="Cancelled">İptal</option>
+                                }
+                            </select>
+                            <button type="submit" class="btn btn-secondary">Kaydet</button>
+                        </form>
+                    </td>
+                    <td>@order.TotalAmount.ToString("N2") TL</td>
+                    <td>
+                        @foreach (var item in order.Items)
+                        {
+                            <div>@item.ProductName - @item.Quantity adet</div>
+                        }
+                        <a asp-action="OrderDetails" asp-route-id="@order.OrderId">Detay</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

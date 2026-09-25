@@ -1,0 +1,48 @@
+@model c1Soft_Projesi.ViewModels.AdminUserEditViewModel
+
+@{
+    ViewData["Title"] = "Kullanıcı Düzenle";
+}
+
+<div class="simple-form">
+    <h1>Kullanıcı Düzenle</h1>
+
+    <form asp-action="EditUser" method="post">
+        <input asp-for="UserId" type="hidden" />
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <label asp-for="FirstName">Ad</label>
+        <input asp-for="FirstName" class="form-control" />
+        <span asp-validation-for="FirstName" class="text-danger"></span>
+
+        <label asp-for="LastName">Soyad</label>
+        <input asp-for="LastName" class="form-control" />
+        <span asp-validation-for="LastName" class="text-danger"></span>
+
+        <label asp-for="Email">E-posta</label>
+        <input asp-for="Email" class="form-control" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+
+        <label asp-for="Phone">Telefon</label>
+        <input asp-for="Phone" class="form-control" />
+        <span asp-validation-for="Phone" class="text-danger"></span>
+
+        <label asp-for="Username">Kullanıcı adı</label>
+        <input asp-for="Username" class="form-control" />
+        <span asp-validation-for="Username" class="text-danger"></span>
+
+        <label asp-for="NewPassword">Yeni şifre (değiştirmek istemiyorsanız boş bırakın)</label>
+        <input asp-for="NewPassword" class="form-control" />
+        <span asp-validation-for="NewPassword" class="text-danger"></span>
+
+        <label asp-for="IsActive">Aktif kullanıcı</label>
+        <input asp-for="IsActive" />
+
+        <button type="submit" class="btn btn-primary">Kaydet</button>
+        <a asp-action="Users" class="btn btn-secondary">Geri Dön</a>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

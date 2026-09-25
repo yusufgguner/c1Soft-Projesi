@@ -1,0 +1,67 @@
+@model c1Soft_Projesi.Models.Product
+
+@{
+    ViewData["Title"] = "Ürün Düzenle";
+    var categories = ViewBag.Categories as List<c1Soft_Projesi.Models.Category>;
+}
+
+<div class="simple-form">
+    <h1>Ürün Düzenle</h1>
+
+    <form asp-action="EditProduct" method="post">
+        <input asp-for="ProductId" type="hidden" />
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <label asp-for="CategoryId">Kategori</label>
+        <select asp-for="CategoryId" class="form-control">
+            @if (categories != null)
+            {
+                foreach (var category in categories)
+                {
+                    <option value="@category.CategoryId">@category.CategoryName</option>
+                }
+            }
+        </select>
+
+        <label asp-for="ProductCode">Ürün kodu</label>
+        <input asp-for="ProductCode" class="form-control" />
+        <span asp-validation-for="ProductCode" class="text-danger"></span>
+
+        <label asp-for="ProductName">Ürün adı</label>
+        <input asp-for="ProductName" class="form-control" />
+
+        <label asp-for="Description">Açıklama</label>
+        <textarea asp-for="Description" class="form-control"></textarea>
+
+        <label asp-for="Brand">Marka</label>
+        <input asp-for="Brand" class="form-control" />
+
+        <label asp-for="ManufacturerCode">Üretici kodu</label>
+        <input asp-for="ManufacturerCode" class="form-control" />
+
+        <label asp-for="CustomCode1">Özel kod 1</label>
+        <input asp-for="CustomCode1" class="form-control" />
+
+        <label asp-for="CustomCode2">Özel kod 2</label>
+        <input asp-for="CustomCode2" class="form-control" />
+
+        <label asp-for="ImageUrl">Görsel adresi</label>
+        <input asp-for="ImageUrl" class="form-control" />
+
+        <label asp-for="StockQuantity">Stok miktarı</label>
+        <input asp-for="StockQuantity" class="form-control" min="0" />
+
+        <label asp-for="CriticalStockLevel">Kritik stok seviyesi</label>
+        <input asp-for="CriticalStockLevel" class="form-control" min="0" />
+
+        <label asp-for="Price">Fiyat</label>
+        <input asp-for="Price" class="form-control" min="0" step="0.01" />
+
+        <button type="submit" class="btn btn-primary">Değişiklikleri Kaydet</button>
+        <a asp-action="Products" class="btn btn-secondary">Geri Dön</a>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

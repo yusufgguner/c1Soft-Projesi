@@ -1,0 +1,120 @@
+@model List<c1Soft_Projesi.Models.Product>
+
+@{
+    ViewData["Title"] = "Ürünler";
+    var categories = ViewBag.Categories as List<c1Soft_Projesi.Models.Category>;
+    var gridColumns = ViewBag.GridColumns as List<c1Soft_Projesi.Models.ProductGridColumn> ?? new List<c1Soft_Projesi.Models.ProductGridColumn>();
+}
+
+<h1>Ürünler</h1>
+<p class="form-note">B2B ürün kataloğu</p>
+
+<form asp-action="Index" method="get" class="search-form">
+    <input type="text" name="search" value="@ViewBag.Search" placeholder="Ürün adı, kodu, marka veya açıklama ara" />
+
+    <select name="categoryId">
+        <option value="">Tüm kategoriler</option>
+        @if (categories != null)
+        {
+            foreach (var category in categories)
+            {
+                if (ViewBag.CategoryId != null && (int)ViewBag.CategoryId == category.CategoryId)
+                {
+                    <option value="@category.CategoryId" selected>@category.CategoryName</option>
+                }
+                else
+                {
+                    <option value="@category.CategoryId">@category.CategoryName</option>
+                }
+            }
+        }
+    </select>
+
+    <button type="submit" class="btn btn-primary">Ara</button>
+</form>
+
+<table class="table product-grid">
+    <thead>
+        <tr>
+            @foreach (var column in gridColumns)
+            {
+                <th style="width:@(column.ColumnWidth)px">@column.DisplayName</th>
+            }
+            <th>Detay</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var product in Model)
+        {
+            var formId = "cart-form-" + product.ProductId;
+            <tr>
+                @foreach (var column in gridColumns)
+                {
+                    <td>
+                        @switch (column.FieldName)
+                        {
+                            case "ImageUrl":
+                                if (!string.IsNullOrWhiteSpace(product.ImageUrl))
+                                {
+                                    <img src="@product.ImageUrl" alt="@product.ProductName" class="grid-image" />
+                                }
+                                else
+                                {
+                                    <span>-</span>
+                                }
+                                break;
+                            case "ProductCode":
+                                @product.ProductCode
+                                break;
+                            case "ProductName":
+                                @product.ProductName
+                                break;
+                            case "Brand":
+                                @product.Brand
+                                break;
+                            case "StockQuantity":
+                                if (product.StockQuantity <= 0)
+                                {
+                                    <span class="stock-yok">Yok</span>
+                                }
+                                else if (product.StockQuantity <= product.CriticalStockLevel)
+                                {
+                                    <span class="stock-kritik">Kritik</span>
+                                }
+                                else
+                                {
+                                    <span class="stock-var">Var</span>
+                                }
+                                break;
+                            case "Price":
+                                @product.Price.ToString("N2") @:TL
+                                break;
+                            case "Quantity":
+                                if (product.StockQuantity > 0)
+                                {
+                                    <input id="quantity-@product.ProductId" form="@formId" type="number" name="quantity" value="1" min="1" max="@product.StockQuantity" class="quantity-input" />
+                                }
+                                break;
+                            case "AddToCart":
+                                if (product.StockQuantity > 0)
+                                {
+                                    <form id="@formId" asp-controller="Cart" asp-action="Add" method="post" class="inline-form">
+                                        <input type="hidden" name="productId" value="@product.ProductId" />
+                                        <button type="submit" class="btn btn-primary">Ekle</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <span class="text-danger">Stok yok</span>
+                                }
+                                break;
+                        }
+                    </td>
+                }
+                <td>
+                    <a asp-action="Details" asp-route-id="@product.ProductId">Detay</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

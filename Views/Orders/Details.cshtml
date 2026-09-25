@@ -1,0 +1,37 @@
+@model c1Soft_Projesi.Models.Order
+
+@{
+    ViewData["Title"] = "Sipariş Detayı";
+}
+
+<h1>Sipariş Detayı</h1>
+<p><strong>Sipariş No:</strong> @Model.OrderNumber</p>
+<p><strong>Tarih:</strong> @Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</p>
+<p><strong>Durum:</strong> @Model.OrderStatus</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Ürün</th>
+            <th>Ürün Kodu</th>
+            <th>Adet</th>
+            <th>Birim Fiyat</th>
+            <th>Toplam</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Items)
+        {
+            <tr>
+                <td>@item.ProductName</td>
+                <td>@item.ProductCode</td>
+                <td>@item.Quantity</td>
+                <td>@item.UnitPrice.ToString("N2") TL</td>
+                <td>@item.LineTotal.ToString("N2") TL</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<p><strong>Toplam: @Model.TotalAmount.ToString("N2") TL</strong></p>
+<a asp-action="Index" class="btn btn-secondary">Siparişlere Dön</a>

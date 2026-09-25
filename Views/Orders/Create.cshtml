@@ -1,0 +1,27 @@
+@{
+    ViewData["Title"] = "Sipariş Oluştur";
+}
+
+<div class="simple-form">
+    <h1>Sipariş Oluştur</h1>
+    <p class="form-note">Teslimat adresini yazıp siparişinizi tamamlayabilirsiniz.</p>
+
+    @if (TempData["OrderError"] != null)
+    {
+        <div class="text-danger">@TempData["OrderError"]</div>
+    }
+
+    <form asp-action="Create" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <label for="shippingAddress">Teslimat adresi</label>
+        <textarea id="shippingAddress" name="shippingAddress" class="form-control" rows="4"></textarea>
+
+        <button type="submit" class="btn btn-primary">Siparişi Tamamla</button>
+        <a asp-controller="Cart" asp-action="Index" class="btn btn-secondary">Sepete Dön</a>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

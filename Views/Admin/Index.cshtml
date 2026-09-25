@@ -1,0 +1,27 @@
+@{
+    ViewData["Title"] = "Yönetim Paneli";
+}
+
+<h1>Yönetim Paneli</h1>
+<p class="form-note">Sistemin genel durumu</p>
+
+<div class="admin-summary">
+    <div class="summary-box">
+        <strong>@ViewBag.ProductCount</strong>
+        <span>Ürün</span>
+    </div>
+    <div class="summary-box">
+        <strong>@ViewBag.CategoryCount</strong>
+        <span>Kategori</span>
+    </div>
+    <div class="summary-box">
+        <strong>@ViewBag.OrderCount</strong>
+        <span>Sipariş</span>
+    </div>
+    <div class="summary-box">
+        <strong>@ViewBag.UserCount</strong>
+        <span>Kullanıcı</span>
+    </div>
+</div>
+
+<p class="form-note">Ürün ve kategori yönetimi sonraki adımlarda eklenecek.</p>

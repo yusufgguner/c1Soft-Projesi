@@ -1,0 +1,47 @@
+@model List<c1Soft_Projesi.Models.Category>
+
+@{
+    ViewData["Title"] = "Kategori Yönetimi";
+}
+
+<h1>Kategori Yönetimi</h1>
+<p class="form-note">Sistemde kayıtlı ürün kategorileri</p>
+<a asp-action="CreateCategory" class="btn btn-primary">Yeni Kategori Ekle</a>
+
+@if (TempData["AdminError"] != null)
+{
+    <p class="text-danger">@TempData["AdminError"]</p>
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Kategori</th>
+            <th>Açıklama</th>
+            <th>Durum</th>
+            <th>Oluşturulma</th>
+            <th>İşlem</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var category in Model)
+        {
+            <tr>
+                <td>@category.CategoryName</td>
+                <td>@category.Description</td>
+                <td>@(category.IsActive ? "Aktif" : "Pasif")</td>
+                <td>@category.CreatedAt.ToString("dd.MM.yyyy")</td>
+                <td>
+                    <a asp-action="EditCategory" asp-route-id="@category.CategoryId">Düzenle</a>
+                    @if (category.IsActive)
+                    {
+                        <form asp-action="DeleteCategory" method="post" class="inline-form">
+                            <input type="hidden" name="id" value="@category.CategoryId" />
+                            <button type="submit" class="btn btn-danger">Pasif Yap</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
