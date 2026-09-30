@@ -1,3 +1,5 @@
+@model c1Soft_Projesi.Models.SepetR
+
 @{
     ViewData["Title"] = "Sipariş Oluştur";
 }
@@ -11,11 +13,21 @@
         <div class="text-danger">@TempData["OrderError"]</div>
     }
 
+    <p>
+        Sepetteki ürün sayısı: @Model.Kalemler.Count<br />
+        Ara toplam: @Model.BrutTutar.ToString("N2") TL<br />
+        KDV: @Model.VergiTutar.ToString("N2") TL<br />
+        <strong>Genel toplam: @Model.GenelTutar.ToString("N2") TL</strong>
+    </p>
+
     <form asp-action="Create" method="post">
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
         <label for="shippingAddress">Teslimat adresi</label>
         <textarea id="shippingAddress" name="shippingAddress" class="form-control" rows="4"></textarea>
+
+        <label for="notu">Sipariş notu</label>
+        <textarea id="notu" name="notu" class="form-control" rows="2" maxlength="500">@Model.Notu</textarea>
 
         <button type="submit" class="btn btn-primary">Siparişi Tamamla</button>
         <a asp-controller="Cart" asp-action="Index" class="btn btn-secondary">Sepete Dön</a>

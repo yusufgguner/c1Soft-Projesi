@@ -1,0 +1,35 @@
+@model c1Soft_Projesi.Models.SiparisR
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Ürün Kodu</th>
+            <th>Ürün</th>
+            <th>Adet</th>
+            <th>Birim Fiyat</th>
+            <th>Tutar</th>
+            <th>KDV Oranı</th>
+            <th>KDV</th>
+            <th>Toplam</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var kalem in Model.Kalemler)
+        {
+            <tr>
+                <td>@kalem.UrunKodu</td>
+                <td>@kalem.UrunAdi</td>
+                <td>@kalem.Miktar</td>
+                <td>@kalem.BirimFiyat.ToString("N2") TL</td>
+                <td>@kalem.BirimTutar.ToString("N2") TL</td>
+                <td>%@kalem.KDVOrani.ToString("0")</td>
+                <td>@kalem.KDVTutari.ToString("N2") TL</td>
+                <td>@kalem.GenelToplam.ToString("N2") TL</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<p>Ara toplam: @Model.BrutTutar.ToString("N2") TL</p>
+<p>KDV: @Model.VergiTutar.ToString("N2") TL</p>
+<p><strong>Genel toplam: @Model.GenelTutar.ToString("N2") TL</strong></p>

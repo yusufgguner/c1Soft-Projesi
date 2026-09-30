@@ -24,7 +24,7 @@ public class AdminController : Controller
     {
         ViewBag.ProductCount = await db.Products.CountAsync();
         ViewBag.CategoryCount = await db.Categories.CountAsync();
-        ViewBag.OrderCount = await db.Orders.CountAsync();
+        ViewBag.OrderCount = await db.SiparisR.CountAsync();
         ViewBag.UserCount = await db.Users.CountAsync();
 
         return View();
@@ -158,13 +158,13 @@ public class AdminController : Controller
 
     public async Task<IActionResult> Orders()
     {
-        var orders = await db.Orders
-            .Include(x => x.User)
-            .Include(x => x.Items)
-            .OrderByDescending(x => x.CreatedAt)
+        var siparisler = await db.SiparisR
+            .Include(x => x.Kullanici)
+            .Include(x => x.Kalemler)
+            .OrderByDescending(x => x.Tarih)
             .ToListAsync();
 
-        return View(orders);
+        return View(siparisler);
     }
 
     public async Task<IActionResult> Users()
@@ -188,15 +188,15 @@ public class AdminController : Controller
             return BadRequest();
         }
 
-        var order = await db.Orders.FindAsync(id);
+        var siparis = await db.SiparisR.FindAsync(id);
 
-        if (order == null)
+        if (siparis == null)
         {
             return NotFound();
         }
 
-        order.OrderStatus = status;
-        order.UpdatedAt = DateTime.Now;
+        siparis.SiparisDurumu = status;
+        siparis.GuncellemeTarihi = DateTime.Now;
         await db.SaveChangesAsync();
 
         return RedirectToAction("Orders");
@@ -369,17 +369,17 @@ public class AdminController : Controller
     [HttpGet]
     public async Task<IActionResult> OrderDetails(int id)
     {
-        var order = await db.Orders
-            .Include(x => x.User)
-            .Include(x => x.Items)
-            .FirstOrDefaultAsync(x => x.OrderId == id);
+        var siparis = await db.SiparisR
+            .Include(x => x.Kullanici)
+            .Include(x => x.Kalemler)
+            .FirstOrDefaultAsync(x => x.SiparisId == id);
 
-        if (order == null)
+        if (siparis == null)
         {
             return NotFound();
         }
 
-        return View(order);
+        return View(siparis);
     }
 
     private async Task LoadCategories()

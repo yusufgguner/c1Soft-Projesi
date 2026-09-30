@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using c1Soft_Projesi.Data;
 using c1Soft_Projesi.Models;
+using c1Soft_Projesi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -19,131 +20,152 @@ public class OrdersController : Controller
 
     public async Task<IActionResult> Index()
     {
-        int userId = GetUserId();
+        int kullaniciId = GetUserId();
 
-        var orders = await db.Orders
-            .Include(x => x.Items)
-            .Where(x => x.UserId == userId)
-            .OrderByDescending(x => x.CreatedAt)
+        var siparisler = await db.SiparisR
+            .Include(x => x.Kalemler)
+            .Where(x => x.KullaniciId == kullaniciId)
+            .OrderByDescending(x => x.Tarih)
             .ToListAsync();
 
-        return View(orders);
+        return View(siparisler);
     }
 
     public async Task<IActionResult> Details(int id)
     {
-        int userId = GetUserId();
+        int kullaniciId = GetUserId();
 
-        var order = await db.Orders
-            .Include(x => x.Items)
-            .FirstOrDefaultAsync(x => x.OrderId == id && x.UserId == userId);
+        var siparis = await db.SiparisR
+            .Include(x => x.Kalemler)
+            .FirstOrDefaultAsync(x => x.SiparisId == id && x.KullaniciId == kullaniciId);
 
-        if (order == null)
+        if (siparis == null)
         {
             return NotFound();
         }
 
-        return View(order);
+        return View(siparis);
     }
 
     [HttpGet]
     public async Task<IActionResult> Create()
     {
-        int userId = GetUserId();
+        int kullaniciId = GetUserId();
 
-        var cart = await db.Carts
-            .Include(x => x.Items)
-            .ThenInclude(x => x.Product)
-            .FirstOrDefaultAsync(x => x.UserId == userId);
+        var sepet = await AcikSepetiGetir(kullaniciId);
 
-        if (cart == null || cart.Items.Count == 0)
+        if (sepet == null || sepet.Kalemler.Count == 0)
         {
             TempData["OrderError"] = "Sipariş oluşturmak için sepetinizde ürün olmalıdır.";
             return RedirectToAction("Index", "Cart");
         }
 
-        return View();
+        return View(sepet);
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(string shippingAddress)
+    public async Task<IActionResult> Create(string shippingAddress, string? notu)
     {
-        int userId = GetUserId();
+        int kullaniciId = GetUserId();
 
-        if (string.IsNullOrWhiteSpace(shippingAddress))
-        {
-            ModelState.AddModelError("", "Teslimat adresi zorunludur.");
-            return View();
-        }
+        var sepet = await AcikSepetiGetir(kullaniciId);
 
-        var cart = await db.Carts
-            .Include(x => x.Items)
-            .ThenInclude(x => x.Product)
-            .FirstOrDefaultAsync(x => x.UserId == userId);
-
-        if (cart == null || cart.Items.Count == 0)
+        if (sepet == null || sepet.Kalemler.Count == 0)
         {
             TempData["OrderError"] = "Sepetiniz boş olduğu için sipariş oluşturulamadı.";
             return RedirectToAction("Index", "Cart");
         }
 
-        foreach (var item in cart.Items)
+        if (string.IsNullOrWhiteSpace(shippingAddress))
         {
-            if (item.Product == null || item.Quantity > item.Product.StockQuantity)
+            ModelState.AddModelError("", "Teslimat adresi zorunludur.");
+            return View(sepet);
+        }
+
+        foreach (var kalem in sepet.Kalemler)
+        {
+            if (kalem.Urun == null || kalem.Miktar > kalem.Urun.StockQuantity)
             {
                 TempData["OrderError"] = "Sepetteki ürünlerden birinin stoğu yeterli değil.";
                 return RedirectToAction("Index", "Cart");
             }
         }
 
+        // sepette beklerken fiyat değişmiş olabilir, güncel fiyatla tekrar hesaplıyorum
+        foreach (var kalem in sepet.Kalemler)
+        {
+            kalem.BirimFiyat = kalem.Urun!.Price;
+            SepetHesaplama.KalemHesapla(kalem);
+        }
+
+        SepetHesaplama.ToplamlariHesapla(sepet);
+        sepet.Notu = notu;
+
         using var transaction = await db.Database.BeginTransactionAsync();
 
-        var order = new Order
+        var siparis = new SiparisR
         {
-            UserId = userId,
-            OrderNumber = "ORD-" + DateTime.Now.ToString("yyyyMMddHHmmssfff"),
-            OrderStatus = "Pending",
-            ShippingAddress = shippingAddress,
-            CreatedAt = DateTime.Now
+            SiparisNo = "SIP-" + DateTime.Now.ToString("yyyyMMddHHmmssfff"),
+            SepetId = sepet.SepetId,
+            KullaniciId = kullaniciId,
+            Tarih = DateTime.Now,
+            BrutTutar = sepet.BrutTutar,
+            VergiTutar = sepet.VergiTutar,
+            GenelTutar = sepet.GenelTutar,
+            Notu = sepet.Notu,
+            TeslimatAdresi = shippingAddress,
+            SiparisDurumu = "Pending"
         };
 
-        foreach (var item in cart.Items)
+        foreach (var kalem in sepet.Kalemler)
         {
-            var product = item.Product!;
-            decimal lineTotal = product.Price * item.Quantity;
-
-            order.Items.Add(new OrderItem
+            siparis.Kalemler.Add(new SiparisD
             {
-                ProductId = product.ProductId,
-                ProductCode = product.ProductCode,
-                ProductName = product.ProductName,
-                UnitPrice = product.Price,
-                Quantity = item.Quantity,
-                LineTotal = lineTotal
+                UrunId = kalem.UrunId,
+                UrunKodu = kalem.UrunKodu,
+                UrunAdi = kalem.UrunAdi,
+                Miktar = kalem.Miktar,
+                BirimFiyat = kalem.BirimFiyat,
+                BirimTutar = kalem.BirimTutar,
+                KDVOrani = kalem.KDVOrani,
+                KDVTutari = kalem.KDVTutari,
+                GenelToplam = kalem.GenelToplam
             });
+
+            var urun = kalem.Urun!;
 
             db.StockMovements.Add(new StockMovement
             {
-                ProductId = product.ProductId,
-                UserId = userId,
+                ProductId = urun.ProductId,
+                UserId = kullaniciId,
                 MovementType = "Order",
-                QuantityChange = -item.Quantity,
-                OldQuantity = product.StockQuantity,
-                NewQuantity = product.StockQuantity - item.Quantity,
-                Note = "Sipariş: " + order.OrderNumber
+                QuantityChange = -kalem.Miktar,
+                OldQuantity = urun.StockQuantity,
+                NewQuantity = urun.StockQuantity - kalem.Miktar,
+                Note = "Sipariş: " + siparis.SiparisNo
             });
 
-            product.StockQuantity -= item.Quantity;
-            order.TotalAmount += lineTotal;
+            urun.StockQuantity -= kalem.Miktar;
         }
 
-        db.Orders.Add(order);
-        db.CartItems.RemoveRange(cart.Items);
+        db.SiparisR.Add(siparis);
+
+        // sepeti silmiyorum, dönüştü diye işaretliyorum. yeni ürün eklenince yeni SepetR açılıyor
+        sepet.Donustumu = true;
+
         await db.SaveChangesAsync();
         await transaction.CommitAsync();
 
-        return RedirectToAction("Index");
+        return RedirectToAction("Details", new { id = siparis.SiparisId });
+    }
+
+    private async Task<SepetR?> AcikSepetiGetir(int kullaniciId)
+    {
+        return await db.SepetR
+            .Include(x => x.Kalemler)
+            .ThenInclude(x => x.Urun)
+            .FirstOrDefaultAsync(x => x.KullaniciId == kullaniciId && x.Donustumu == false);
     }
 
     private int GetUserId()

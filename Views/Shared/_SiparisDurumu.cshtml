@@ -1,0 +1,12 @@
+@model string
+
+@switch (Model)
+{
+    case "Pending": <span>Bekliyor</span> break;
+    case "Approved": <span>Onaylandı</span> break;
+    case "Rejected": <span>Reddedildi</span> break;
+    case "Shipped": <span>Kargoda</span> break;
+    case "Delivered": <span>Teslim Edildi</span> break;
+    case "Cancelled": <span>İptal</span> break;
+    default: <span>@Model</span> break;
+}

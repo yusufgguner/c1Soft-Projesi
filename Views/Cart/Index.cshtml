@@ -1,8 +1,7 @@
-@model c1Soft_Projesi.Models.Cart
+@model c1Soft_Projesi.Models.SepetR
 
 @{
     ViewData["Title"] = "Sepetim";
-    decimal total = 0;
 }
 
 <h1>Sepetim</h1>
@@ -17,43 +16,48 @@
     <div class="text-danger">@TempData["OrderError"]</div>
 }
 
-@if (Model.Items == null || Model.Items.Count == 0)
+@if (Model.Kalemler == null || Model.Kalemler.Count == 0)
 {
     <p>Sepetinizde henüz ürün bulunmuyor.</p>
     <a asp-controller="Products" asp-action="Index" class="btn btn-primary">Ürünlere Git</a>
 }
 else
 {
+    <p class="form-note">Sepet No: @Model.SepetId - @Model.Tarih.ToString("dd.MM.yyyy HH:mm")</p>
+
     <table class="table">
         <thead>
             <tr>
+                <th>Ürün Kodu</th>
                 <th>Ürün</th>
                 <th>Adet</th>
                 <th>Birim Fiyat</th>
+                <th>Tutar</th>
+                <th>KDV</th>
                 <th>Toplam</th>
                 <th>İşlem</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in Model.Items)
+            @foreach (var kalem in Model.Kalemler)
             {
-                decimal lineTotal = item.Product!.Price * item.Quantity;
-                total += lineTotal;
-
                 <tr>
-                    <td>@item.Product.ProductName</td>
-                    <td>@item.Quantity</td>
-                    <td>@item.Product.Price.ToString("N2") TL</td>
-                    <td>@lineTotal.ToString("N2") TL</td>
+                    <td>@kalem.UrunKodu</td>
+                    <td>@kalem.UrunAdi</td>
+                    <td>@kalem.Miktar</td>
+                    <td>@kalem.BirimFiyat.ToString("N2") TL</td>
+                    <td>@kalem.BirimTutar.ToString("N2") TL</td>
+                    <td>@kalem.KDVTutari.ToString("N2") TL</td>
+                    <td>@kalem.GenelToplam.ToString("N2") TL</td>
                     <td>
                         <form asp-action="Update" method="post" class="cart-action">
-                            <input type="hidden" name="cartItemId" value="@item.CartItemId" />
-                            <input type="number" name="quantity" value="@item.Quantity" min="1" />
+                            <input type="hidden" name="sayac" value="@kalem.Sayac" />
+                            <input type="number" name="quantity" value="@kalem.Miktar" min="1" />
                             <button type="submit" class="btn btn-secondary">Güncelle</button>
                         </form>
 
                         <form asp-action="Remove" method="post" class="cart-action">
-                            <input type="hidden" name="cartItemId" value="@item.CartItemId" />
+                            <input type="hidden" name="sayac" value="@kalem.Sayac" />
                             <button type="submit" class="btn btn-danger">Sil</button>
                         </form>
                     </td>
@@ -62,6 +66,8 @@ else
         </tbody>
     </table>
 
-    <p><strong>Genel toplam: @total.ToString("N2") TL</strong></p>
+    <p>Ara toplam: @Model.BrutTutar.ToString("N2") TL</p>
+    <p>KDV: @Model.VergiTutar.ToString("N2") TL</p>
+    <p><strong>Genel toplam: @Model.GenelTutar.ToString("N2") TL</strong></p>
     <a asp-controller="Orders" asp-action="Create" class="btn btn-primary">Siparişe Geç</a>
 }

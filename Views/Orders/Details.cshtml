@@ -1,37 +1,19 @@
-@model c1Soft_Projesi.Models.Order
+@model c1Soft_Projesi.Models.SiparisR
 
 @{
     ViewData["Title"] = "Sipariş Detayı";
 }
 
 <h1>Sipariş Detayı</h1>
-<p><strong>Sipariş No:</strong> @Model.OrderNumber</p>
-<p><strong>Tarih:</strong> @Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</p>
-<p><strong>Durum:</strong> @Model.OrderStatus</p>
+<p><strong>Sipariş No:</strong> @Model.SiparisNo</p>
+<p><strong>Tarih:</strong> @Model.Tarih.ToString("dd.MM.yyyy HH:mm")</p>
+<p><strong>Durum:</strong> <partial name="_SiparisDurumu" model="Model.SiparisDurumu" /></p>
+<p><strong>Adres:</strong> @Model.TeslimatAdresi</p>
+@if (!string.IsNullOrWhiteSpace(Model.Notu))
+{
+    <p><strong>Not:</strong> @Model.Notu</p>
+}
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Ürün</th>
-            <th>Ürün Kodu</th>
-            <th>Adet</th>
-            <th>Birim Fiyat</th>
-            <th>Toplam</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model.Items)
-        {
-            <tr>
-                <td>@item.ProductName</td>
-                <td>@item.ProductCode</td>
-                <td>@item.Quantity</td>
-                <td>@item.UnitPrice.ToString("N2") TL</td>
-                <td>@item.LineTotal.ToString("N2") TL</td>
-            </tr>
-        }
-    </tbody>
-</table>
+<partial name="_SiparisKalemleri" model="Model" />
 
-<p><strong>Toplam: @Model.TotalAmount.ToString("N2") TL</strong></p>
 <a asp-action="Index" class="btn btn-secondary">Siparişlere Dön</a>

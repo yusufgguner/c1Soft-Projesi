@@ -1,4 +1,4 @@
-@model List<c1Soft_Projesi.Models.Order>
+@model List<c1Soft_Projesi.Models.SiparisR>
 
 @{
     ViewData["Title"] = "Sipariş Yönetimi";
@@ -25,17 +25,17 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var order in Model)
+            @foreach (var siparis in Model)
             {
                 <tr>
-                    <td>@order.OrderNumber</td>
-                    <td>@order.User?.Username</td>
-                    <td>@order.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                    <td>@siparis.SiparisNo</td>
+                    <td>@siparis.Kullanici?.Username</td>
+                    <td>@siparis.Tarih.ToString("dd.MM.yyyy HH:mm")</td>
                     <td>
                         <form asp-action="UpdateOrderStatus" method="post" class="inline-form">
-                            <input type="hidden" name="id" value="@order.OrderId" />
+                            <input type="hidden" name="id" value="@siparis.SiparisId" />
                             <select name="status">
-                                @if (order.OrderStatus == "Pending")
+                                @if (siparis.SiparisDurumu == "Pending")
                                 {
                                     <option value="Pending" selected>Bekliyor</option>
                                 }
@@ -43,7 +43,7 @@ else
                                 {
                                     <option value="Pending">Bekliyor</option>
                                 }
-                                @if (order.OrderStatus == "Approved")
+                                @if (siparis.SiparisDurumu == "Approved")
                                 {
                                     <option value="Approved" selected>Onaylandı</option>
                                 }
@@ -51,7 +51,7 @@ else
                                 {
                                     <option value="Approved">Onaylandı</option>
                                 }
-                                @if (order.OrderStatus == "Shipped")
+                                @if (siparis.SiparisDurumu == "Shipped")
                                 {
                                     <option value="Shipped" selected>Kargoda</option>
                                 }
@@ -59,7 +59,7 @@ else
                                 {
                                     <option value="Shipped">Kargoda</option>
                                 }
-                                @if (order.OrderStatus == "Rejected")
+                                @if (siparis.SiparisDurumu == "Rejected")
                                 {
                                     <option value="Rejected" selected>Reddedildi</option>
                                 }
@@ -67,7 +67,7 @@ else
                                 {
                                     <option value="Rejected">Reddedildi</option>
                                 }
-                                @if (order.OrderStatus == "Delivered")
+                                @if (siparis.SiparisDurumu == "Delivered")
                                 {
                                     <option value="Delivered" selected>Teslim Edildi</option>
                                 }
@@ -75,7 +75,7 @@ else
                                 {
                                     <option value="Delivered">Teslim Edildi</option>
                                 }
-                                @if (order.OrderStatus == "Cancelled")
+                                @if (siparis.SiparisDurumu == "Cancelled")
                                 {
                                     <option value="Cancelled" selected>İptal</option>
                                 }
@@ -87,13 +87,13 @@ else
                             <button type="submit" class="btn btn-secondary">Kaydet</button>
                         </form>
                     </td>
-                    <td>@order.TotalAmount.ToString("N2") TL</td>
+                    <td>@siparis.GenelTutar.ToString("N2") TL</td>
                     <td>
-                        @foreach (var item in order.Items)
+                        @foreach (var kalem in siparis.Kalemler)
                         {
-                            <div>@item.ProductName - @item.Quantity adet</div>
+                            <div>@kalem.UrunAdi - @kalem.Miktar adet</div>
                         }
-                        <a asp-action="OrderDetails" asp-route-id="@order.OrderId">Detay</a>
+                        <a asp-action="OrderDetails" asp-route-id="@siparis.SiparisId">Detay</a>
                     </td>
                 </tr>
             }

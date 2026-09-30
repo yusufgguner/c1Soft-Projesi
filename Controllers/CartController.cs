@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using c1Soft_Projesi.Data;
 using c1Soft_Projesi.Models;
+using c1Soft_Projesi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -19,63 +20,66 @@ public class CartController : Controller
 
     public async Task<IActionResult> Index()
     {
-        int userId = GetUserId();
+        int kullaniciId = GetUserId();
 
-        var cart = await db.Carts
-            .Include(x => x.Items)
-            .ThenInclude(x => x.Product)
-            .FirstOrDefaultAsync(x => x.UserId == userId);
+        var sepet = await AcikSepetiGetir(kullaniciId);
 
-        return View(cart ?? new Cart());
+        return View(sepet ?? new SepetR());
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Add(int productId, int quantity = 1)
     {
-        int userId = GetUserId();
+        int kullaniciId = GetUserId();
 
-        var product = await db.Products
+        var urun = await db.Products
             .FirstOrDefaultAsync(x => x.ProductId == productId && x.IsActive);
 
-        if (product == null)
+        if (urun == null)
         {
             return NotFound();
         }
 
-        var cart = await db.Carts
-            .Include(x => x.Items)
-            .FirstOrDefaultAsync(x => x.UserId == userId);
+        var sepet = await AcikSepetiGetir(kullaniciId);
 
-        if (cart == null)
+        if (sepet == null)
         {
-            cart = new Cart { UserId = userId };
-            db.Carts.Add(cart);
+            sepet = new SepetR
+            {
+                KullaniciId = kullaniciId,
+                Tarih = DateTime.Now,
+                Donustumu = false
+            };
+            db.SepetR.Add(sepet);
         }
 
-        var cartItem = cart.Items.FirstOrDefault(x => x.ProductId == productId);
-        int requestedQuantity = (cartItem?.Quantity ?? 0) + quantity;
+        var kalem = sepet.Kalemler.FirstOrDefault(x => x.UrunId == productId);
+        int istenenMiktar = (kalem?.Miktar ?? 0) + quantity;
 
-        if (quantity < 1 || requestedQuantity > product.StockQuantity)
+        if (quantity < 1 || istenenMiktar > urun.StockQuantity)
         {
-            TempData["CartError"] = $"Bu ürün için en fazla {product.StockQuantity} adet ekleyebilirsiniz.";
+            TempData["CartError"] = $"Bu ürün için en fazla {urun.StockQuantity} adet ekleyebilirsiniz.";
             return RedirectToAction("Details", "Products", new { id = productId });
         }
 
-        if (cartItem == null)
+        if (kalem == null)
         {
-            cart.Items.Add(new CartItem
+            kalem = new SepetD
             {
-                ProductId = productId,
-                Quantity = quantity
-            });
-        }
-        else
-        {
-            cartItem.Quantity = requestedQuantity;
+                UrunId = urun.ProductId,
+                UrunKodu = urun.ProductCode,
+                UrunAdi = urun.ProductName,
+                EklenmeTarihi = DateTime.Now
+            };
+            sepet.Kalemler.Add(kalem);
         }
 
-        cart.UpdatedAt = DateTime.Now;
+        kalem.Miktar = istenenMiktar;
+        kalem.BirimFiyat = urun.Price;
+        SepetHesaplama.KalemHesapla(kalem);
+        SepetHesaplama.ToplamlariHesapla(sepet);
+
         await db.SaveChangesAsync();
 
         return RedirectToAction("Index");
@@ -83,30 +87,31 @@ public class CartController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Update(int cartItemId, int quantity)
+    public async Task<IActionResult> Update(int sayac, int quantity)
     {
-        int userId = GetUserId();
+        int kullaniciId = GetUserId();
 
-        var item = await db.CartItems
-            .Include(x => x.Product)
-            .Include(x => x.Cart)
-            .FirstOrDefaultAsync(x => x.CartItemId == cartItemId && x.Cart!.UserId == userId);
+        var sepet = await AcikSepetiGetir(kullaniciId);
+        var kalem = sepet?.Kalemler.FirstOrDefault(x => x.Sayac == sayac);
 
-        if (item == null)
+        if (sepet == null || kalem == null)
         {
             return NotFound();
         }
 
-        var product = item.Product!;
+        var urun = kalem.Urun!;
 
-        if (quantity < 1 || quantity > product.StockQuantity)
+        if (quantity < 1 || quantity > urun.StockQuantity)
         {
-            TempData["CartError"] = $"Bu ürün için en fazla {product.StockQuantity} adet seçebilirsiniz.";
+            TempData["CartError"] = $"Bu ürün için en fazla {urun.StockQuantity} adet seçebilirsiniz.";
             return RedirectToAction("Index");
         }
 
-        item.Quantity = quantity;
-        item.Cart!.UpdatedAt = DateTime.Now;
+        kalem.Miktar = quantity;
+        kalem.BirimFiyat = urun.Price;
+        SepetHesaplama.KalemHesapla(kalem);
+        SepetHesaplama.ToplamlariHesapla(sepet);
+
         await db.SaveChangesAsync();
 
         return RedirectToAction("Index");
@@ -114,23 +119,33 @@ public class CartController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Remove(int cartItemId)
+    public async Task<IActionResult> Remove(int sayac)
     {
-        int userId = GetUserId();
+        int kullaniciId = GetUserId();
 
-        var item = await db.CartItems
-            .Include(x => x.Cart)
-            .FirstOrDefaultAsync(x => x.CartItemId == cartItemId && x.Cart!.UserId == userId);
+        var sepet = await AcikSepetiGetir(kullaniciId);
+        var kalem = sepet?.Kalemler.FirstOrDefault(x => x.Sayac == sayac);
 
-        if (item == null)
+        if (sepet == null || kalem == null)
         {
             return NotFound();
         }
 
-        db.CartItems.Remove(item);
+        sepet.Kalemler.Remove(kalem);
+        db.SepetD.Remove(kalem);
+        SepetHesaplama.ToplamlariHesapla(sepet);
+
         await db.SaveChangesAsync();
 
         return RedirectToAction("Index");
+    }
+
+    private async Task<SepetR?> AcikSepetiGetir(int kullaniciId)
+    {
+        return await db.SepetR
+            .Include(x => x.Kalemler)
+            .ThenInclude(x => x.Urun)
+            .FirstOrDefaultAsync(x => x.KullaniciId == kullaniciId && x.Donustumu == false);
     }
 
     private int GetUserId()

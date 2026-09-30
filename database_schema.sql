@@ -185,69 +185,96 @@ BEGIN
 END
 GO
 
-IF OBJECT_ID('Carts', 'U') IS NULL
+-- eski Carts/Orders tablolarını kaldırdım, SepetR/SepetD - SiparisR/SiparisD yapısına geçtim
+IF OBJECT_ID('OrderItems', 'U') IS NOT NULL DROP TABLE OrderItems;
+IF OBJECT_ID('Orders', 'U') IS NOT NULL DROP TABLE Orders;
+IF OBJECT_ID('CartItems', 'U') IS NOT NULL DROP TABLE CartItems;
+IF OBJECT_ID('Carts', 'U') IS NOT NULL DROP TABLE Carts;
+GO
+
+IF OBJECT_ID('SepetR', 'U') IS NULL
 BEGIN
-    CREATE TABLE Carts
+    CREATE TABLE SepetR
     (
-        CartId INT IDENTITY(1,1) PRIMARY KEY,
-        UserId INT NOT NULL UNIQUE,
-        CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
-        UpdatedAt DATETIME2 NULL,
-        CONSTRAINT FK_Carts_Users FOREIGN KEY (UserId) REFERENCES Users(UserId)
+        SepetId INT IDENTITY(1,1) PRIMARY KEY,
+        KullaniciId INT NOT NULL,
+        Tarih DATETIME2 NOT NULL DEFAULT GETDATE(),
+        GuncellemeTarihi DATETIME2 NULL,
+        BrutTutar DECIMAL(18,2) NOT NULL DEFAULT 0,
+        VergiTutar DECIMAL(18,2) NOT NULL DEFAULT 0,
+        GenelTutar DECIMAL(18,2) NOT NULL DEFAULT 0,
+        Notu NVARCHAR(500) NULL,
+        Donustumu BIT NOT NULL DEFAULT 0,
+        CONSTRAINT FK_SepetR_Users FOREIGN KEY (KullaniciId) REFERENCES Users(UserId)
     );
 END
 GO
 
-IF OBJECT_ID('CartItems', 'U') IS NULL
+IF OBJECT_ID('SepetD', 'U') IS NULL
 BEGIN
-    CREATE TABLE CartItems
+    CREATE TABLE SepetD
     (
-        CartItemId INT IDENTITY(1,1) PRIMARY KEY,
-        CartId INT NOT NULL,
-        ProductId INT NOT NULL,
-        Quantity INT NOT NULL,
-        AddedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
-        CONSTRAINT CK_CartItems_Quantity CHECK (Quantity > 0),
-        CONSTRAINT UQ_CartItems_Cart_Product UNIQUE (CartId, ProductId),
-        CONSTRAINT FK_CartItems_Carts FOREIGN KEY (CartId) REFERENCES Carts(CartId),
-        CONSTRAINT FK_CartItems_Products FOREIGN KEY (ProductId) REFERENCES Products(ProductId)
+        Sayac INT IDENTITY(1,1) PRIMARY KEY,
+        SepetId INT NOT NULL,
+        UrunId INT NOT NULL,
+        UrunKodu NVARCHAR(50) NOT NULL,
+        UrunAdi NVARCHAR(150) NOT NULL,
+        Miktar INT NOT NULL,
+        BirimFiyat DECIMAL(18,2) NOT NULL,
+        BirimTutar DECIMAL(18,2) NOT NULL,
+        KDVOrani DECIMAL(5,2) NOT NULL,
+        KDVTutari DECIMAL(18,2) NOT NULL,
+        GenelToplam DECIMAL(18,2) NOT NULL,
+        EklenmeTarihi DATETIME2 NOT NULL DEFAULT GETDATE(),
+        CONSTRAINT CK_SepetD_Miktar CHECK (Miktar > 0),
+        CONSTRAINT UQ_SepetD_Sepet_Urun UNIQUE (SepetId, UrunId),
+        CONSTRAINT FK_SepetD_SepetR FOREIGN KEY (SepetId) REFERENCES SepetR(SepetId),
+        CONSTRAINT FK_SepetD_Products FOREIGN KEY (UrunId) REFERENCES Products(ProductId)
     );
 END
 GO
 
-IF OBJECT_ID('Orders', 'U') IS NULL
+IF OBJECT_ID('SiparisR', 'U') IS NULL
 BEGIN
-    CREATE TABLE Orders
+    CREATE TABLE SiparisR
     (
-        OrderId INT IDENTITY(1,1) PRIMARY KEY,
-        UserId INT NOT NULL,
-        OrderNumber NVARCHAR(30) NOT NULL UNIQUE,
-        OrderStatus NVARCHAR(30) NOT NULL DEFAULT 'Pending',
-        TotalAmount DECIMAL(18,2) NOT NULL DEFAULT 0,
-        ShippingAddress NVARCHAR(300) NULL,
-        CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
-        UpdatedAt DATETIME2 NULL,
-        CONSTRAINT FK_Orders_Users FOREIGN KEY (UserId) REFERENCES Users(UserId)
+        SiparisId INT IDENTITY(1,1) PRIMARY KEY,
+        SiparisNo NVARCHAR(30) NOT NULL UNIQUE,
+        SepetId INT NULL,
+        KullaniciId INT NOT NULL,
+        Tarih DATETIME2 NOT NULL DEFAULT GETDATE(),
+        GuncellemeTarihi DATETIME2 NULL,
+        BrutTutar DECIMAL(18,2) NOT NULL DEFAULT 0,
+        VergiTutar DECIMAL(18,2) NOT NULL DEFAULT 0,
+        GenelTutar DECIMAL(18,2) NOT NULL DEFAULT 0,
+        Notu NVARCHAR(500) NULL,
+        TeslimatAdresi NVARCHAR(300) NULL,
+        SiparisDurumu NVARCHAR(30) NOT NULL DEFAULT 'Pending',
+        CONSTRAINT FK_SiparisR_SepetR FOREIGN KEY (SepetId) REFERENCES SepetR(SepetId),
+        CONSTRAINT FK_SiparisR_Users FOREIGN KEY (KullaniciId) REFERENCES Users(UserId)
     );
 END
 GO
 
-IF OBJECT_ID('OrderItems', 'U') IS NULL
+IF OBJECT_ID('SiparisD', 'U') IS NULL
 BEGIN
-    CREATE TABLE OrderItems
+    CREATE TABLE SiparisD
     (
-        OrderItemId INT IDENTITY(1,1) PRIMARY KEY,
-        OrderId INT NOT NULL,
-        ProductId INT NOT NULL,
-        ProductCode NVARCHAR(50) NOT NULL,
-        ProductName NVARCHAR(150) NOT NULL,
-        UnitPrice DECIMAL(18,2) NOT NULL,
-        Quantity INT NOT NULL,
-        LineTotal DECIMAL(18,2) NOT NULL,
-        CONSTRAINT CK_OrderItems_Quantity CHECK (Quantity > 0),
-        CONSTRAINT UQ_OrderItems_Order_Product UNIQUE (OrderId, ProductId),
-        CONSTRAINT FK_OrderItems_Orders FOREIGN KEY (OrderId) REFERENCES Orders(OrderId),
-        CONSTRAINT FK_OrderItems_Products FOREIGN KEY (ProductId) REFERENCES Products(ProductId)
+        Sayac INT IDENTITY(1,1) PRIMARY KEY,
+        SiparisId INT NOT NULL,
+        UrunId INT NOT NULL,
+        UrunKodu NVARCHAR(50) NOT NULL,
+        UrunAdi NVARCHAR(150) NOT NULL,
+        Miktar INT NOT NULL,
+        BirimFiyat DECIMAL(18,2) NOT NULL,
+        BirimTutar DECIMAL(18,2) NOT NULL,
+        KDVOrani DECIMAL(5,2) NOT NULL,
+        KDVTutari DECIMAL(18,2) NOT NULL,
+        GenelToplam DECIMAL(18,2) NOT NULL,
+        CONSTRAINT CK_SiparisD_Miktar CHECK (Miktar > 0),
+        CONSTRAINT UQ_SiparisD_Siparis_Urun UNIQUE (SiparisId, UrunId),
+        CONSTRAINT FK_SiparisD_SiparisR FOREIGN KEY (SiparisId) REFERENCES SiparisR(SiparisId),
+        CONSTRAINT FK_SiparisD_Products FOREIGN KEY (UrunId) REFERENCES Products(ProductId)
     );
 END
 GO

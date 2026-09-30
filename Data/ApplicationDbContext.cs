@@ -14,10 +14,10 @@ public class ApplicationDbContext : DbContext
     public DbSet<User> Users { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<Product> Products { get; set; }
-    public DbSet<Cart> Carts { get; set; }
-    public DbSet<CartItem> CartItems { get; set; }
-    public DbSet<Order> Orders { get; set; }
-    public DbSet<OrderItem> OrderItems { get; set; }
+    public DbSet<SepetR> SepetR { get; set; }
+    public DbSet<SepetD> SepetD { get; set; }
+    public DbSet<SiparisR> SiparisR { get; set; }
+    public DbSet<SiparisD> SiparisD { get; set; }
     public DbSet<StockMovement> StockMovements { get; set; }
     public DbSet<ProductGridColumn> ProductGridColumns { get; set; }
 
@@ -27,18 +27,6 @@ public class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<Product>()
             .Property(x => x.Price)
-            .HasPrecision(18, 2);
-
-        modelBuilder.Entity<Order>()
-            .Property(x => x.TotalAmount)
-            .HasPrecision(18, 2);
-
-        modelBuilder.Entity<OrderItem>()
-            .Property(x => x.UnitPrice)
-            .HasPrecision(18, 2);
-
-        modelBuilder.Entity<OrderItem>()
-            .Property(x => x.LineTotal)
             .HasPrecision(18, 2);
 
         modelBuilder.Entity<User>()
@@ -51,35 +39,41 @@ public class ApplicationDbContext : DbContext
             .WithMany(x => x.Products)
             .HasForeignKey(x => x.CategoryId);
 
-        modelBuilder.Entity<Cart>()
-            .HasOne(x => x.User)
-            .WithOne()
-            .HasForeignKey<Cart>(x => x.UserId);
-
-        modelBuilder.Entity<CartItem>()
-            .HasOne(x => x.Cart)
-            .WithMany(x => x.Items)
-            .HasForeignKey(x => x.CartId);
-
-        modelBuilder.Entity<CartItem>()
-            .HasOne(x => x.Product)
+        modelBuilder.Entity<SepetR>()
+            .HasOne(x => x.Kullanici)
             .WithMany()
-            .HasForeignKey(x => x.ProductId);
+            .HasForeignKey(x => x.KullaniciId);
 
-        modelBuilder.Entity<Order>()
-            .HasOne(x => x.User)
+        modelBuilder.Entity<SepetD>()
+            .HasOne(x => x.Sepet)
+            .WithMany(x => x.Kalemler)
+            .HasForeignKey(x => x.SepetId);
+
+        modelBuilder.Entity<SepetD>()
+            .HasOne(x => x.Urun)
             .WithMany()
-            .HasForeignKey(x => x.UserId);
+            .HasForeignKey(x => x.UrunId);
 
-        modelBuilder.Entity<OrderItem>()
-            .HasOne(x => x.Order)
-            .WithMany(x => x.Items)
-            .HasForeignKey(x => x.OrderId);
-
-        modelBuilder.Entity<OrderItem>()
-            .HasOne(x => x.Product)
+        modelBuilder.Entity<SiparisR>()
+            .HasOne(x => x.Kullanici)
             .WithMany()
-            .HasForeignKey(x => x.ProductId);
+            .HasForeignKey(x => x.KullaniciId);
+
+        modelBuilder.Entity<SiparisR>()
+            .HasOne(x => x.Sepet)
+            .WithMany()
+            .HasForeignKey(x => x.SepetId)
+            .IsRequired(false);
+
+        modelBuilder.Entity<SiparisD>()
+            .HasOne(x => x.Siparis)
+            .WithMany(x => x.Kalemler)
+            .HasForeignKey(x => x.SiparisId);
+
+        modelBuilder.Entity<SiparisD>()
+            .HasOne(x => x.Urun)
+            .WithMany()
+            .HasForeignKey(x => x.UrunId);
 
         modelBuilder.Entity<StockMovement>()
             .HasOne(x => x.Product)
